@@ -1,31 +1,26 @@
 import numpy as np
 import matplotlib as mpl
 
+from blackbox_functions.zdt1 import ZDT1
 # Use the pgf backend (must be set before pyplot imported)
-#mpl.use('pgf')
+# mpl.use('pgf')
 import matplotlib.pyplot as plt
 
-from examples.blackbox_functions.two_dimensional.zdt2 import ZDT2
 from paref.moo_algorithms.minimizer.differential_evolution_minimizer import DifferentialEvolutionMinimizer
 from paref.moo_algorithms.stopping_criteria.max_iterations_reached import MaxIterationsReached
-from paref.pareto_reflections.fill_gap import FillGap
+from paref.pareto_reflections.minimize_weighted_norm_to_utopia import MinimizeWeightedNormToUtopia
 
 ##################################
+# Initialize Pareto reflection corresponding to some maximal Pareto point
 
-function = ZDT2(input_dimensions=2)
-gap_points = np.array([function.return_true_pareto_front()[30],
-                       function.return_true_pareto_front()[80]])
-
-# calculate center
-# center = np.mean(gap_points, axis=1) doesnt work
-center = 1 / 2 * (gap_points[0] + gap_points[1])
-
-
-
-##################################
-reflection = FillGap(gap_points=gap_points,dimension_domain=2)
+reflection = MinimizeWeightedNormToUtopia(utopia_point=np.array([0, 0]),
+                                          potency=2,
+                                          scalar=np.ones(2),
+                                          )
 
 ###################################
+# Initialize blackbox function and MOO algorithm
+function = ZDT1(input_dimensions=2)
 moo = DifferentialEvolutionMinimizer()
 stopping_criteria = MaxIterationsReached(max_iterations=2)
 moo.apply_to_sequence(blackbox_function=function,
@@ -37,7 +32,7 @@ points = np.array([evaluation[1] for evaluation in function.evaluations])
 line = function.return_true_pareto_front()
 
 ##################################
-# plot
+# Plot results
 fig, ax = plt.subplots()
 
 ax.plot(line.T[0],
@@ -51,16 +46,11 @@ ax.plot(points.T[0],
         points.T[1],
         '^',
         color='black',
-        label='Identified gap fill Pareto point')
-
-ax.plot(gap_points.T[0],
-        gap_points.T[1],
-        'o',
-        color='green',
-        label='Gap points')
+        label='Identified maximal Pareto point')
 
 ax.set_xlabel('f1')
 ax.set_ylabel('f2')
 ax.legend()
 fig.show()
-#fig.savefig('fill_gap.pgf', format='pgf')
+
+# fig.savefig('maximal_pp.pgf', format='pgf')

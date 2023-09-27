@@ -1,9 +1,11 @@
 import numpy as np
 import matplotlib as mpl
+
+from blackbox_functions.zdt2 import ZDT2
+
 # Use the pgf backend (must be set before pyplot imported)
-mpl.use('pgf')
+# mpl.use('pgf')
 import matplotlib.pyplot as plt
-from examples.blackbox_functions.two_dimensional.zdt2 import ZDT2
 from paref.moo_algorithms.minimizer.differential_evolution_minimizer import DifferentialEvolutionMinimizer
 from paref.moo_algorithms.stopping_criteria.max_iterations_reached import MaxIterationsReached
 from paref.pareto_reflections.find_edge_points import FindEdgePoints
@@ -11,12 +13,14 @@ from paref.pareto_reflections.restrict_by_point import RestrictByPoint
 from paref.pareto_reflections.operations.compose_reflections import ComposeReflections
 
 ##################################
+# Initialize Pareto reflections
 reflection_1 = FindEdgePoints(dimension_domain=2, dimension=0)
 reflection_2 = RestrictByPoint(restricting_point=np.array([0.7, 5]),
                                nadir=np.array([5, 5]))
 
 reflection = ComposeReflections(reflection_2, reflection_1)
 ###################################
+# Initialize blackbox function and MOO algorithm
 function = ZDT2(input_dimensions=2)
 moo = DifferentialEvolutionMinimizer()
 stopping_criteria = MaxIterationsReached(max_iterations=2)
@@ -29,7 +33,7 @@ points = np.array([evaluation[1] for evaluation in function.evaluations])
 line = function.return_true_pareto_front()
 
 ##################################
-# plot
+# Plot results
 fig, ax = plt.subplots()
 
 ax.plot(line.T[0],
@@ -51,4 +55,4 @@ ax.fill_between([0, 0.7], [5, 5], [0, 0], color='green', alpha=0.2, label='Restr
 ax.legend()
 fig.show()
 
-fig.savefig('restricting_point.pgf', format='pgf')
+# fig.savefig('restricting_point.pgf', format='pgf')
